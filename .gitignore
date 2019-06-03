@@ -6,3 +6,5 @@ Debug/
 targetConfigs/
 tm4c123gh6pm.h
 tm4c123gh6pm.lds
+wait.c
+wait.h
