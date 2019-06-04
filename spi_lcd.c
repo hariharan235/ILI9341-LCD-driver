@@ -10,7 +10,7 @@
 #include "tm4c123gh6pm.h"
 
 
-void initHw()
+void initSPI() //Currently includes GPIO + SYSCTL + LED + SSI Init
 {
 
        // Configure System clock as 40Mhz
@@ -32,6 +32,10 @@ void initHw()
 
        // Configure SSI2 pins for SPI configuration
        SYSCTL_RCGCSSI_R |= SYSCTL_RCGCSSI_R2;           // turn-on SSI2 clocking
+
+       // wait until SSI is ready
+           while ((SYSCTL_PRSSI_R & SYSCTL_PRSSI_R2) == 0){}
+
        GPIO_PORTB_DIR_R |= (1 << 4) | (1 << 7);         // make bits 4 and 7 outputs
        GPIO_PORTB_AFSEL_R |= (1 << 4) | (1 << 6) | (1 << 7);                      // select alternative functions for MOSI, MISO, SCLK pins
        GPIO_PORTB_PCTL_R = GPIO_PCTL_PB7_SSI2TX | GPIO_PCTL_PB6_SSI2RX | GPIO_PCTL_PB4_SSI2CLK; // map alt fns to SSI2
@@ -49,26 +53,38 @@ void initHw()
 }
 
 
-void putSSI2(uint8_t val)
+//*****************************************************************************
+// Function for transmitting data to LCD screen.
+//*****************************************************************************
+void spiTx(uint8_t *dataIn, size_t size, uint8_t *dataOut)
 {
-    SSI2_DR_R = val;
-    while (SSI2_SR_R & SSI_SR_BSY); //**< Wait till no operation on FIFO*/<
+  uint8_t count = 0;
 
-}
+  // Wait until any SPI device is inactive
+  while((SSI2_SR_R & SSI_SR_TFE)!= 1){};
 
-uint8_t getSSI2()
-{
-    return SSI2_DR_R;
-}
+  // Disable the SSI interface
+  SSI2_CR1_R &= ~SSI_CR1_SSE;
 
-int main()
-{
+  // Fill the Transmit FIFO
+  while((SSI2_SR_R & SSI_SR_TNF)!= 0 && (count < size) )
+  {
+    // Send out the first byte
+    SSI2_DR_R = *dataIn;
+    dataIn++;
+    count++;
+  }
 
-    initHw();
-    ONBOARD_RED_LED = 1;
-    waitMicrosecond(10000);
-    ONBOARD_RED_LED = 0;
-    waitMicrosecond(10000);
+  //Enable SSI
+  SSI2_CR1_R |= SSI_CR1_SSE;
 
-    while(1);
+  for( count = 0; count < size; count++)
+  {
+    // Wait until the recieve has finished
+    while((SSI2_SR_R & SSI_SR_RNE)==0){};// wait until response
+
+    // Store the results
+    *dataOut =  SSI2_DR_R;
+    dataOut++;
+  }
 }

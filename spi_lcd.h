@@ -27,6 +27,23 @@
 #define D_CNOT               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 1*4))) // PB1
 #define RESET                (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 0*4))) // PB0
 
+#define MISO PB6
+#define MOSI PB7
+#define SCLK PB4
 
+
+/**Masking macros*/
+
+#define LO(x)        ((x) & 0x0F) //LSB
+#define HI(x)        (((x)>>4) & 0x0F) //MSB
+
+/**Tests**/
+
+#ifndef test_spi
+#define test_spi
+#endif
+
+void initSPI();
+void spiTx(uint8_t *dataIn, size_t size, uint8_t *dataOut);
 
 #endif /* SPI_LCD_H_ */
