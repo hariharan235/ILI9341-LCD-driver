@@ -24,12 +24,13 @@ struct LCD_status_t
 void  writedata (uint8_t d)
 {
       uint8_t data = d;
+      uint8_t dataOut;
 
       CS_NOT = 0;
       D_CNOT = 1;
 
 
-      spi_Transmit(&data, 1);
+      spi_Transmit(&data, 1,&dataOut);
 
       CS_NOT = 1;
 }
@@ -38,12 +39,13 @@ void  writedata (uint8_t d)
 void writecommand(uint8_t d)
 {
     uint8_t data = d;
+    uint8_t dataOut;
 
     CS_NOT = 0;
     D_CNOT = 0;
 
 
-    spi_Transmit(&data, 1);
+    spi_Transmit(&data, 1,&dataOut);
 
     CS_NOT = 1;
 }
@@ -219,6 +221,7 @@ void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
     uint8_t data[2];
+    uint8_t dataOut[2];
     uint8_t hi;
     uint8_t lo;
 
@@ -241,7 +244,7 @@ void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
             data[0] = hi;
             data[1] = lo;
 
-            spi_Transmit(&data[0], 2);
+            spi_Transmit(&data[0], 2 ,dataOut );
     }
   }
 
@@ -257,7 +260,7 @@ void drawPixel(int16_t x, int16_t y, uint16_t color)
 {
 
     uint8_t data[2];
-
+    uint8_t dataOut[2];
 
   setAddrWindow(y,x,y+1,x+1);
 
@@ -267,7 +270,7 @@ void drawPixel(int16_t x, int16_t y, uint16_t color)
     data[0] = color >> 8;
     data[1] = color;
 
-    spi_Transmit(&data[0], 2);
+    spi_Transmit(&data[0], 2 , dataOut);
 
     CS_NOT = 1;
 }

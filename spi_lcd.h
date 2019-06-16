@@ -22,10 +22,10 @@
 #define ONBOARD_BLUE_LED     (*((volatile uint32_t *)(0x42000000 + (0x400253FC-0x40000000)*32 + 2*4))) // PF2
 #define ONBOARD_PUSH_BUTTON  (*((volatile uint32_t *)(0x42000000 + (0x400253FC-0x40000000)*32 + 4*4))) // PF4
 
-#define CS_NOT               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 5*4))) // PB5
-#define BL_LED               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 2*4))) // PB2
-#define D_CNOT               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 1*4))) // PB1
-#define RESET                (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 0*4))) // PB0
+#define CS_NOT               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 5*4))) // PD1
+#define BL_LED               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 2*4))) // PB3
+#define D_CNOT               (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 1*4))) // PE1
+#define RESET                (*((volatile uint32_t *)(0x42000000 + (0x400053FC-0x40000000)*32 + 0*4))) // PE2
 
 #define MISO PB6
 #define MOSI PB7
@@ -44,5 +44,5 @@
 #endif
 
 void initSPI();
-void spi_Transmit(uint8_t *dataIn, size_t size);
+void spi_Transmit(uint8_t *dataIn, size_t size , uint8_t *dataOut);
 #endif /* SPI_LCD_H_ */
