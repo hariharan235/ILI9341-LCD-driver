@@ -8,7 +8,11 @@
 #ifndef ILI9341_H_
 #define ILI9341_H_
 
+typedef struct LCD_status_t LCD_status_t;
 
+// Handle type
+
+typedef void* LCD_handle_t;
 
 #define ILI9341_TFTWIDTH  240
 #define ILI9341_TFTHEIGHT 320
@@ -99,7 +103,6 @@
 #define MADCTL_RGB 0x00
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
-
 
 
 

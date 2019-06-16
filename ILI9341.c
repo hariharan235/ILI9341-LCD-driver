@@ -1,21 +1,35 @@
 #include "spi_lcd.h"
 #include "ILI9341.h"
 #include "wait.h"
-
+#include "fontsans.h"
 #include "tm4c123gh6pm.h"
 
+uint8_t cursorX,cursorY;
+
+struct LCD_status_t
+{
+    uint16_t cursorX;
+    uint16_t cursorY;
+    uint8_t *fontArray;
+    uint8_t (*fontDesp)[][3];
+    uint8_t fontSize;
+    uint8_t fontStyle;
+    uint8_t charSpacing;
+    uint8_t lineSpacing;
+    uint8_t fontColor;
+    uint8_t fontBgColor;
+};
 
 
 void  writedata (uint8_t d)
 {
       uint8_t data = d;
-      uint8_t dataOut;
 
       CS_NOT = 0;
       D_CNOT = 1;
 
 
-      spiTx(&data, 1, &dataOut);
+      spi_Transmit(&data, 1);
 
       CS_NOT = 1;
 }
@@ -24,13 +38,12 @@ void  writedata (uint8_t d)
 void writecommand(uint8_t d)
 {
     uint8_t data = d;
-    uint8_t dataOut;
 
     CS_NOT = 0;
     D_CNOT = 0;
 
 
-    spiTx(&data, 1, &dataOut);
+    spi_Transmit(&data, 1);
 
     CS_NOT = 1;
 }
@@ -46,117 +59,117 @@ void init_lcd2(void)
 
 
     writecommand(0xEF);
-  writedata(0x03);
-  writedata(0x80);
-  writedata(0x02);
+    writedata(0x03);
+    writedata(0x80);
+    writedata(0x02);
 
-  writecommand(0xCF);
-  writedata(0x00);
-  writedata(0XC1);
-  writedata(0X30);
+    writecommand(0xCF);
+    writedata(0x00);
+    writedata(0XC1);
+    writedata(0X30);
 
-  writecommand(0xED);
-  writedata(0x64);
-  writedata(0x03);
-  writedata(0X12);
-  writedata(0X81);
+    writecommand(0xED);
+    writedata(0x64);
+    writedata(0x03);
+    writedata(0X12);
+    writedata(0X81);
 
-  writecommand(0xE8);
-  writedata(0x85);
-  writedata(0x00);
-  writedata(0x78);
+    writecommand(0xE8);
+    writedata(0x85);
+    writedata(0x00);
+    writedata(0x78);
 
-  writecommand(0xCB);
-  writedata(0x39);
-  writedata(0x2C);
-  writedata(0x00);
-  writedata(0x34);
-  writedata(0x02);
+   writecommand(0xCB);
+   writedata(0x39);
+   writedata(0x2C);
+   writedata(0x00);
+   writedata(0x34);
+   writedata(0x02);
 
-  writecommand(0xF7);
-  writedata(0x20);
+   writecommand(0xF7);
+   writedata(0x20);
 
-  writecommand(0xEA);
-  writedata(0x00);
-  writedata(0x00);
+   writecommand(0xEA);
+   writedata(0x00);
+   writedata(0x00);
 
-  writecommand(ILI9341_PWCTR1);    //Power control
-  writedata(0x23);   //VRH[5:0]
+   writecommand(ILI9341_PWCTR1);    //Power control
+   writedata(0x23);   //VRH[5:0]
 
-  writecommand(ILI9341_PWCTR2);    //Power control
-  writedata(0x10);   //SAP[2:0];BT[3:0]
+   writecommand(ILI9341_PWCTR2);    //Power control
+   writedata(0x10);   //SAP[2:0];BT[3:0]
 
-  writecommand(ILI9341_VMCTR1);    //VCM control
-  writedata(0x3e); //?????
-  writedata(0x28);
+   writecommand(ILI9341_VMCTR1);    //VCM control
+   writedata(0x3e); //?????
+   writedata(0x28);
 
-  writecommand(ILI9341_VMCTR2);    //VCM control2
-  writedata(0x86);  //--
+   writecommand(ILI9341_VMCTR2);    //VCM control2
+   writedata(0x86);  //--
 
-  writecommand(ILI9341_MADCTL);    // Memory Access Control
-  writedata(0x48);
+   writecommand(ILI9341_MADCTL);    // Memory Access Control
+   writedata(0x48);
 
-  writecommand(ILI9341_PIXFMT);
-  writedata(0x55);
+   writecommand(ILI9341_PIXFMT);
+   writedata(0x55);
 
-  writecommand(ILI9341_FRMCTR1);
-  writedata(0x00);
-  writedata(0x18);
+   writecommand(ILI9341_FRMCTR1);
+   writedata(0x00);
+   writedata(0x18);
 
-  writecommand(ILI9341_DFUNCTR);    // Display Function Control
-  writedata(0x08);
-  writedata(0x82);
-  writedata(0x27);
+   writecommand(ILI9341_DFUNCTR);    // Display Function Control
+   writedata(0x08);
+   writedata(0x82);
+   writedata(0x27);
 
-  writecommand(0xF2);    // 3Gamma Function Disable
-  writedata(0x00);
+   writecommand(0xF2);    // 3Gamma Function Disable
+   writedata(0x00);
 
-  writecommand(ILI9341_GAMMASET);    //Gamma curve selected
-  writedata(0x01);
+   writecommand(ILI9341_GAMMASET);    //Gamma curve selected
+   writedata(0x01);
 
-  writecommand(ILI9341_GMCTRP1);    //Set Gamma
-  writedata(0x0F);
-  writedata(0x31);
-  writedata(0x2B);
-  writedata(0x0C);
-  writedata(0x0E);
-  writedata(0x08);
-  writedata(0x4E);
-  writedata(0xF1);
-  writedata(0x37);
-  writedata(0x07);
-  writedata(0x10);
-  writedata(0x03);
-  writedata(0x0E);
-  writedata(0x09);
-  writedata(0x00);
+   writecommand(ILI9341_GMCTRP1);    //Set Gamma
+   writedata(0x0F);
+   writedata(0x31);
+   writedata(0x2B);
+   writedata(0x0C);
+   writedata(0x0E);
+   writedata(0x08);
+   writedata(0x4E);
+   writedata(0xF1);
+   writedata(0x37);
+   writedata(0x07);
+   writedata(0x10);
+   writedata(0x03);
+   writedata(0x0E);
+   writedata(0x09);
+   writedata(0x00);
 
-  writecommand(ILI9341_GMCTRN1);    //Set Gamma
-  writedata(0x00);
-  writedata(0x0E);
-  writedata(0x14);
-  writedata(0x03);
-  writedata(0x11);
-  writedata(0x07);
-  writedata(0x31);
-  writedata(0xC1);
-  writedata(0x48);
-  writedata(0x08);
-  writedata(0x0F);
-  writedata(0x0C);
-  writedata(0x31);
-  writedata(0x36);
-  writedata(0x0F);
+   writecommand(ILI9341_GMCTRN1);    //Set Gamma
+   writedata(0x00);
+   writedata(0x0E);
+   writedata(0x14);
+   writedata(0x03);
+   writedata(0x11);
+   writedata(0x07);
+   writedata(0x31);
+   writedata(0xC1);
+   writedata(0x48);
+   writedata(0x08);
+   writedata(0x0F);
+   writedata(0x0C);
+   writedata(0x31);
+   writedata(0x36);
+   writedata(0x0F);
 
 
-    writecommand(ILI9341_SLPOUT);    //Exit Sleep
+   writecommand(ILI9341_SLPOUT);    //Exit Sleep
 
-    waitMicrosecond(1200);
+   waitMicrosecond(1200);
 
    writecommand(ILI9341_DISPON);    //Display on
 
    waitMicrosecond(15000); // wait a bit
-        // turn on the back light
+                             // turn on the back light
    BL_LED = 1;
 }
 
@@ -187,26 +200,25 @@ void setRotation(uint8_t m)
 void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 
-  writecommand(ILI9341_CASET); // Column addr set
+  writecommand(ILI9341_CASET); // Column addr set 0x2A
   writedata(x0 >> 8);
   writedata(x0 & 0xFF);     // XSTART
   writedata(x1 >> 8);
   writedata(x1 & 0xFF);     // XEND
 
-  writecommand(ILI9341_PASET); // Row addr set
+  writecommand(ILI9341_PASET); // Row addr set 0x2B
   writedata(y0>>8);
   writedata(y0);     // YSTART
   writedata(y1>>8);
   writedata(y1);     // YEND
 
-  writecommand(ILI9341_RAMWR); // write to RAM
+  writecommand(ILI9341_RAMWR); // write to RAM 0x2C
 }
 
 // fill a rectangle
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
     uint8_t data[2];
-    uint8_t dataOut[2];
     uint8_t hi;
     uint8_t lo;
 
@@ -229,7 +241,7 @@ void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
             data[0] = hi;
             data[1] = lo;
 
-            spiTx(&data[0], 2, dataOut);
+            spi_Transmit(&data[0], 2);
     }
   }
 
@@ -241,6 +253,174 @@ void fillScreen(uint16_t color)
   fillRect(0, 0,  ILI9341_TFTWIDTH, ILI9341_TFTHEIGHT, color);
 }
 
+void drawPixel(int16_t x, int16_t y, uint16_t color)
+{
+
+    uint8_t data[2];
+
+
+  setAddrWindow(y,x,y+1,x+1);
+
+    D_CNOT = 1;
+    CS_NOT = 0;
+
+    data[0] = color >> 8;
+    data[1] = color;
+
+    spi_Transmit(&data[0], 2);
+
+    CS_NOT = 1;
+}
+
+void drawRect(int16_t x,int16_t y,int16_t height,int16_t width,uint16_t color)
+{
+    //From bottom left
+    uint8_t i,j;
+    int16_t startX = x;
+    int16_t startY = y;
+
+   for(i = startY ; i < startY + height - 1 ; i++ )
+   {
+       drawPixel(startX, i, color);
+       drawPixel(startX + width -1 , i , color);
+   }
+   for(j = startX ; j < startX + width - 1 ; j++ )
+   {
+       drawPixel(j , startY , color );
+       drawPixel(j , startY + height - 1 , color);
+   }
+
+}
+
+void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoom , uint8_t space) //, uint16_t Background_Colour)
+{
+
+    uint8_t k,i,j,l;
+    uint8_t charNo;
+    uint8_t temp[12];
+    uint16_t temp16[12];
+    uint8_t charWidth;
+    uint8_t charHeight;
+    uint16_t charOffset;
+    uint8_t tempX,tempY;
+    uint8_t mask = 0x80;
+    uint16_t mask16 = 0x8000;
+    bool spl;
+    tempX = X;
+    tempY = Y;
+    k = 0;
+    l = 0;
+
+    //Find Character Description
+
+    if((uint8_t)Character >= 33)
+    {
+        charNo = Character - 33;
+    }
+    else
+        charNo  = (uint8_t)Character;
+
+    charWidth = microsoftSansSerif_8ptDescriptors[charNo][0];
+    charHeight = microsoftSansSerif_8ptDescriptors[charNo][1];
+    charOffset = microsoftSansSerif_8ptDescriptors[charNo][2];
+
+
+    if(charWidth > 7)
+        spl = true;
+    else
+        spl = false;
+    // Queue character bit map
+  if(!spl)
+  {
+    while(k < charHeight)
+    {
+        temp[k] = microsoftSansSerif_8ptBitmaps[(charOffset+k)];
+        k++;
+    }
+  }
+  else
+  {
+      while(k < charHeight)
+      {
+
+          temp16[k] = ((microsoftSansSerif_8ptBitmaps[(charOffset+l)] << 8) & 0xFF00) + microsoftSansSerif_8ptBitmaps[(charOffset+l+1)];
+          k+=1;
+          l+=2;
+      }
+  }
+
+  if(!spl)
+  {
+    for(i = 0 ; i < charHeight ; i++)
+    {
+
+           for(j = 0 ; j < (charWidth + 1) ; j++)
+           {
+              if(temp[i] & (mask >> j))
+              {
+                drawPixel(tempX , tempY , color);
+              }
+
+              tempX+=zoom;
+           }
+
+           tempX = X;
+           tempY--;
+    }
+  }
+  else
+  {
+      for(i = 0 ; i < charHeight ; i++)
+      {
+
+             for(j = 0 ; j < (charWidth + 1) ; j++)
+             {
+                if(temp16[i] & (mask16 >> j))
+                {
+                  drawPixel(tempX , tempY , color);
+                }
+
+                tempX+=zoom;
+             }
+
+             tempX = X;
+             tempY--;
+      }
+
+  }
+  cursorX+=((charWidth*zoom)+space);
+}
+
+void drawString(char arr[],size_t size,uint16_t color,uint8_t zoomLevel ,uint8_t charSpace)
+{
+    uint8_t i;
+    for(i = 0; i < size ; i++)
+    {
+        if(arr[i] == 0x20)
+        {
+          cursorX+=7; //Depends on current font used
+        }
+        else if(arr[i] == 0x0D)
+        {
+            cursorY-=12;   //Depends on current font used
+        }
+        else if(arr[i] == 0x0A)
+        {
+            cursorX = 20; //Original x coordinate
+        }
+        else
+        {
+          drawChar(arr[i],cursorX,cursorY, color,zoomLevel,charSpace);
+        }
+    }
+}
+void clearScreen()
+{
+    fillScreen(ILI9341_WHITE);
+    cursorX = 20;
+    cursorY = 220;
+}
+
 int main()
 {
     //Init Pins
@@ -249,8 +429,16 @@ int main()
     initSPI();
     init_lcd2();
     setRotation(0);
-    fillScreen(ILI9341_BLUE);
-
-
+    cursorX = 20;
+    cursorY = 220;
+    waitMicrosecond(10000);
+//  fillRect(100,100,100,80,ILI9341_DARKGREEN);
+    clearScreen();
+    drawString("Welcome!",8,ILI9341_DARKGREEN,1,1);
+    drawString("\r\n",2,ILI9341_BLACK,1,1);
+    drawString("Press Enter to Begin!",21,ILI9341_MAROON,1,1);
+    drawString("\r\n",2,ILI9341_BLACK,1,1);
+    drawString("Commands are ",13,ILI9341_BLUE,1,1);
+    drawRect(0,cursorY-15,60,cursorX+150,ILI9341_BLACK);
     while(1);
 }

@@ -56,7 +56,7 @@ void initSPI() //Currently includes GPIO + SYSCTL + LED + SSI Init
 //*****************************************************************************
 // Function for transmitting data to LCD screen.
 //*****************************************************************************
-void spiTx(uint8_t *dataIn, size_t size, uint8_t *dataOut)
+void spi_Transmit(uint8_t *dataIn, size_t size)
 {
   uint8_t count = 0;
 
@@ -83,8 +83,5 @@ void spiTx(uint8_t *dataIn, size_t size, uint8_t *dataOut)
     // Wait until the recieve has finished
     while((SSI2_SR_R & SSI_SR_RNE)==0){};// wait until response
 
-    // Store the results
-    *dataOut =  SSI2_DR_R;
-    dataOut++;
   }
 }

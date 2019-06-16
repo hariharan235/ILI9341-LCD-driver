@@ -44,6 +44,5 @@
 #endif
 
 void initSPI();
-void spiTx(uint8_t *dataIn, size_t size, uint8_t *dataOut);
-
+void spi_Transmit(uint8_t *dataIn, size_t size);
 #endif /* SPI_LCD_H_ */
