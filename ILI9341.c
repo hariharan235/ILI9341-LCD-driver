@@ -4,7 +4,7 @@
 #include "fontsans.h"
 #include "tm4c123gh6pm.h"
 
-uint16_t cursorX,cursorY;
+//uint16_t cursorX,cursorY;
 
 struct LCD_status_t
 {
@@ -12,14 +12,15 @@ struct LCD_status_t
     uint16_t CURSORY;
     uint16_t LCD_HEIGHT;
     uint16_t LCD_WIDTH;
+    uint16_t CHARCOLOR;
+    uint16_t CHARBGCOLOR;
     uint8_t ROTATION;
 //    uint8_t *fontArray;
 //    uint8_t (*fontDesp)[][3];
 //    uint8_t fontSize;
 //    uint8_t fontStyle;
     uint8_t CHARSPACING;
-    uint8_t LINESPACING;
-//    uint8_t fontColor;
+    uint8_t CHARSIZE;
 //    uint8_t fontBgColor;
 }LCD;
 
@@ -178,17 +179,6 @@ void init_lcd2(void)
    BL_LED = 1;
 }
 
-void InitLCDConfig()
-{
-    LCD.ROTATION = 0;
-    LCD.CURSORX = 20;
-    LCD.CURSORY = 200;
-    LCD.LCD_HEIGHT = 320;
-    LCD.LCD_WIDTH = 240;
-    LCD.CHARSPACING = 1;
-    LCD.LINESPACING = 1;
-}
-
 
 void setRotation(uint8_t m)
 {
@@ -203,24 +193,32 @@ void setRotation(uint8_t m)
      LCD.ROTATION = 0;
      LCD.LCD_HEIGHT = 320;
      LCD.LCD_WIDTH = 240;
+     LCD.CURSORX = 10;
+     LCD.CURSORY = 220;
      break;
    case 1:
      writedata(MADCTL_MV | MADCTL_BGR);
      LCD.ROTATION = 1;
      LCD.LCD_HEIGHT = 240;
      LCD.LCD_WIDTH = 320;
+     LCD.CURSORX = 10;
+     LCD.CURSORY = 250;
      break;
    case 2:
      writedata(MADCTL_MY | MADCTL_BGR);
      LCD.ROTATION = 2;
      LCD.LCD_HEIGHT = 320;
      LCD.LCD_WIDTH = 240;
+     LCD.CURSORX = 10;
+     LCD.CURSORY = 220;
     break;
    case 3:
      writedata(MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
      LCD.ROTATION = 3;
      LCD.LCD_HEIGHT = 240;
      LCD.LCD_WIDTH = 320;
+     LCD.CURSORX = 10;
+     LCD.CURSORY = 250;
      break;
   }
 }
@@ -278,7 +276,7 @@ void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 
 void fillScreen(uint16_t color)
 {
-  fillRect(0, 0,  LCD.LCD_WIDTH, LCD.LCD_HEIGHT, color);
+  fillRect(0, 0, LCD.LCD_WIDTH, LCD.LCD_HEIGHT, color);
 }
 
 void drawPixel(int16_t x, int16_t y, uint16_t color)
@@ -320,7 +318,7 @@ void drawRect(int16_t x,int16_t y,int16_t height,int16_t width,uint16_t color)
 
 }
 
-void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoom , uint8_t space) //, uint16_t Background_Colour)
+void drawChar(char Character) //, uint16_t Background_Colour)
 {
 
     uint8_t k,i,j,l;
@@ -334,8 +332,8 @@ void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoo
     uint8_t mask = 0x80;
     uint16_t mask16 = 0x8000;
     bool spl;
-    tempX = X;
-    tempY = Y;
+    tempX = LCD.CURSORX;
+    tempY = LCD.CURSORY;
     k = 0;
     l = 0;
 
@@ -376,7 +374,7 @@ void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoo
           l+=2;
       }
   }
-
+  fillRect((LCD.CURSORY-charHeight),LCD.CURSORX,charHeight,(charWidth+1)*LCD.CHARSIZE,LCD.CHARBGCOLOR);
   if(!spl)
   {
     for(i = 0 ; i < charHeight ; i++)
@@ -386,13 +384,13 @@ void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoo
            {
               if(temp[i] & (mask >> j))
               {
-                drawPixel(tempX , tempY , color);
+                drawPixel(tempX , tempY , LCD.CHARCOLOR);
               }
 
-              tempX+=zoom;
+              tempX += LCD.CHARSIZE ;
            }
 
-           tempX = X;
+           tempX = LCD.CURSORX;
            tempY--;
     }
   }
@@ -405,47 +403,70 @@ void drawChar(char Character, uint8_t X, uint8_t Y, uint16_t color , uint8_t zoo
              {
                 if(temp16[i] & (mask16 >> j))
                 {
-                  drawPixel(tempX , tempY , color);
+                  drawPixel(tempX , tempY , LCD.CHARCOLOR);
                 }
 
-                tempX+=zoom;
+                tempX += LCD.CHARSIZE;
              }
 
-             tempX = X;
+             tempX = LCD.CURSORX;
              tempY--;
       }
 
   }
-  cursorX+=((charWidth*zoom)+space);
+
+  LCD.CURSORX += ((charWidth*LCD.CHARSIZE) + LCD.CHARSPACING);
 }
 
-void drawString(char arr[],size_t size,uint16_t color,uint8_t zoomLevel ,uint8_t charSpace)
+void drawString(char arr[],size_t size)
 {
     uint8_t i;
     for(i = 0; i < size ; i++)
     {
         if(arr[i] == 0x20)
         {
-          cursorX+=7; //Depends on current font used
+          fillRect((LCD.CURSORY-12),LCD.CURSORX,12,8,LCD.CHARBGCOLOR);
+          LCD.CURSORX +=7; //Depends on current font used
         }
         else if(arr[i] == 0x0D)
         {
-            cursorY-=12;   //Depends on current font used
+            LCD.CURSORY-=12;   //Depends on current font used
         }
         else if(arr[i] == 0x0A)
         {
-            cursorX = 20; //Original x coordinate
+            LCD.CURSORX = 10; //Original x coordinate
         }
         else
         {
-          drawChar(arr[i],cursorX,cursorY, color,zoomLevel,charSpace);
+          drawChar(arr[i]);
         }
     }
 }
+
 void clearScreen()
 {
     fillScreen(ILI9341_WHITE);
 }
+
+
+void moveCursor(uint16_t x , uint16_t y)
+{
+    if(x < LCD.LCD_WIDTH && y < LCD.LCD_HEIGHT )
+    {
+       LCD.CURSORX = x;
+       LCD.CURSORY = y;
+    }
+}
+
+
+void setCharConfig(uint16_t color , uint8_t csize , uint8_t cspace , uint16_t bcolor)
+{
+    LCD.CHARCOLOR = color;
+    LCD.CHARSIZE = csize;
+    LCD.CHARSPACING = cspace;
+    LCD.CHARBGCOLOR = bcolor;
+}
+
 
 int main()
 {
@@ -454,18 +475,15 @@ int main()
     //Set rotation
     initSPI();
     init_lcd2();
-    InitLCDConfig();
-    setRotation(3);
-    cursorX = 20;
-    cursorY = 220;
+    setRotation(0);
     waitMicrosecond(10000);
-//  fillRect(100,100,100,80,ILI9341_DARKGREEN);
     clearScreen();
-    drawString("Welcome!",8,ILI9341_DARKGREEN,1,1);
-    drawString("\r\n",2,ILI9341_BLACK,1,1);
-    drawString("Press Enter to Begin!",21,ILI9341_MAROON,1,1);
-    drawString("\r\n",2,ILI9341_BLACK,1,1);
-    drawString("Commands are ",13,ILI9341_BLUE,1,1);
-    drawRect(0,cursorY-15,60,cursorX+150,ILI9341_BLACK);
+    setCharConfig(ILI9341_BLACK,1,1,ILI9341_DARKGREEN);
+    drawString("Hello!",8);
+    drawString("\r\n",2);
+    drawString("Press Enter to Begin!",21);
+    setCharConfig(ILI9341_ORANGE,1,1,ILI9341_DARKGREEN);
+    drawString("\r\n",2);
+    drawString("Commands are ",13);
     while(1);
 }
