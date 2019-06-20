@@ -1,11 +1,15 @@
 #include "spi_lcd.h"
 #include "ILI9341.h"
 #include "wait.h"
-#include "fontsans.h"
+//#include "fontsans.h"
+//#include "fontcalibri.h"
+#include "fontcalibri14.h"
 #include "tm4c123gh6pm.h"
 
+//TODO : fontconfig fns
+//TODO : image displays
+//TODO : Add touch lib
 //uint16_t cursorX,cursorY;
-
 struct LCD_status_t
 {
     uint16_t CURSORX;
@@ -15,27 +19,27 @@ struct LCD_status_t
     uint16_t CHARCOLOR;
     uint16_t CHARBGCOLOR;
     uint8_t ROTATION;
+    uint8_t LINESPACING;
 //    uint8_t *fontArray;
 //    uint8_t (*fontDesp)[][3];
 //    uint8_t fontSize;
 //    uint8_t fontStyle;
     uint8_t CHARSPACING;
     uint8_t CHARSIZE;
-//    uint8_t fontBgColor;
 }LCD;
 
-
+struct LCD_font
+{
+    uint8_t FONTWIDTH;
+    uint8_t FONTHEIGHT;
+}font;
 void  writedata (uint8_t d)
 {
       uint8_t data = d;
       uint8_t dataOut;
-
       CS_NOT = 0;
       D_CNOT = 1;
-
-
       spi_Transmit(&data, 1,&dataOut);
-
       CS_NOT = 1;
 }
 
@@ -44,13 +48,9 @@ void writecommand(uint8_t d)
 {
     uint8_t data = d;
     uint8_t dataOut;
-
     CS_NOT = 0;
     D_CNOT = 0;
-
-
     spi_Transmit(&data, 1,&dataOut);
-
     CS_NOT = 1;
 }
 
@@ -318,13 +318,12 @@ void drawRect(int16_t x,int16_t y,int16_t height,int16_t width,uint16_t color)
 
 }
 
-void drawChar(char Character) //, uint16_t Background_Colour)
+
+void drawChar(char Character) //TODO : Generic Font
 {
 
     uint8_t k,i,j,l;
     uint8_t charNo;
-    uint8_t temp[12];
-    uint16_t temp16[12];
     uint8_t charWidth;
     uint8_t charHeight;
     uint16_t charOffset;
@@ -346,21 +345,29 @@ void drawChar(char Character) //, uint16_t Background_Colour)
     else
         charNo  = (uint8_t)Character;
 
-    charWidth = microsoftSansSerif_8ptDescriptors[charNo][0];
-    charHeight = microsoftSansSerif_8ptDescriptors[charNo][1];
-    charOffset = microsoftSansSerif_8ptDescriptors[charNo][2];
+    //TODO : Add a set font function here
 
+    charWidth = calibri_14ptDescriptors[charNo][0];
+    font.FONTWIDTH = charWidth;
+    charHeight = calibri_14ptDescriptors[charNo][1];
+    font.FONTHEIGHT = charHeight;
+    charOffset = calibri_14ptDescriptors[charNo][2];
 
-    if(charWidth > 7)
+    uint8_t temp[charHeight];
+    uint16_t temp16[charHeight];
+
+    if(charWidth > 8)
         spl = true;
     else
         spl = false;
+
     // Queue character bit map
+
   if(!spl)
   {
     while(k < charHeight)
     {
-        temp[k] = microsoftSansSerif_8ptBitmaps[(charOffset+k)];
+        temp[k] = calibri_14ptBitmaps[(charOffset+k)];
         k++;
     }
   }
@@ -369,12 +376,15 @@ void drawChar(char Character) //, uint16_t Background_Colour)
       while(k < charHeight)
       {
 
-          temp16[k] = ((microsoftSansSerif_8ptBitmaps[(charOffset+l)] << 8) & 0xFF00) + microsoftSansSerif_8ptBitmaps[(charOffset+l+1)];
+          temp16[k] = ((calibri_14ptBitmaps[(charOffset+l)] << 8) & 0xFF00) + calibri_14ptBitmaps[(charOffset+l+1)];
           k+=1;
           l+=2;
       }
   }
+  //Set Bg
+
   fillRect((LCD.CURSORY-charHeight),LCD.CURSORX,charHeight,(charWidth+1)*LCD.CHARSIZE,LCD.CHARBGCOLOR);
+
   if(!spl)
   {
     for(i = 0 ; i < charHeight ; i++)
@@ -391,7 +401,7 @@ void drawChar(char Character) //, uint16_t Background_Colour)
            }
 
            tempX = LCD.CURSORX;
-           tempY--;
+           tempY-=LCD.LINESPACING;
     }
   }
   else
@@ -410,7 +420,8 @@ void drawChar(char Character) //, uint16_t Background_Colour)
              }
 
              tempX = LCD.CURSORX;
-             tempY--;
+             tempY-=LCD.LINESPACING;
+//             tempY--;
       }
 
   }
@@ -426,11 +437,11 @@ void drawString(char arr[],size_t size)
         if(arr[i] == 0x20)
         {
           fillRect((LCD.CURSORY-12),LCD.CURSORX,12,8,LCD.CHARBGCOLOR);
-          LCD.CURSORX +=7; //Depends on current font used
+          LCD.CURSORX +=font.FONTWIDTH; //Depends on current font used
         }
         else if(arr[i] == 0x0D)
         {
-            LCD.CURSORY-=12;   //Depends on current font used
+            LCD.CURSORY-=(font.FONTHEIGHT * LCD.LINESPACING);   //Depends on current font used
         }
         else if(arr[i] == 0x0A)
         {
@@ -443,9 +454,10 @@ void drawString(char arr[],size_t size)
     }
 }
 
+
 void clearScreen()
 {
-    fillScreen(ILI9341_WHITE);
+    fillScreen(ILI9341_BLACK);
 }
 
 
@@ -459,12 +471,13 @@ void moveCursor(uint16_t x , uint16_t y)
 }
 
 
-void setCharConfig(uint16_t color , uint8_t csize , uint8_t cspace , uint16_t bcolor)
+void setCharConfig(uint16_t color , uint8_t csize , uint8_t cspace , uint16_t bcolor , uint8_t lspace)
 {
     LCD.CHARCOLOR = color;
     LCD.CHARSIZE = csize;
     LCD.CHARSPACING = cspace;
     LCD.CHARBGCOLOR = bcolor;
+    LCD.LINESPACING = lspace;
 }
 
 
@@ -478,12 +491,18 @@ int main()
     setRotation(0);
     waitMicrosecond(10000);
     clearScreen();
-    setCharConfig(ILI9341_BLACK,1,1,ILI9341_DARKGREEN);
-    drawString("Hello!",8);
-    drawString("\r\n",2);
-    drawString("Press Enter to Begin!",21);
-    setCharConfig(ILI9341_ORANGE,1,1,ILI9341_DARKGREEN);
-    drawString("\r\n",2);
-    drawString("Commands are ",13);
+    setCharConfig(ILI9341_DARKGREEN,1,1,ILI9341_BLACK,1);
+    drawString("Press Enter to Begin",20);
+    drawString("\r\nWelcome\r\n@ILI9341",19);
+//    drawString("hariharan@ILI9341:~$ sudo su\r\n",30);
+//    drawString("hariharan@ILI9341:~$ Enter Password:\r\n",38);
+//    moveCursor(10,50);
+//    drawString(">_ ",3);
+//    drawString("Hello!",8);
+//    drawString("\r\n",2);
+//    drawString("Press Enter to Begin!",21);
+////    setCharConfig(ILI9341_ORANGE,1,1,ILI9341_DARKGREEN);
+//    drawString("\r\n",2);
+//    drawString("Commands are ",13);
     while(1);
 }

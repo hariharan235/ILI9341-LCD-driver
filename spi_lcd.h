@@ -27,10 +27,6 @@
 #define D_CNOT               (*((volatile uint32_t *)(0x42000000 + (0x400243FC-0x40000000)*32 + 1*4))) // PE1
 #define RESET                (*((volatile uint32_t *)(0x42000000 + (0x400243FC-0x40000000)*32 + 2*4))) // PE2
 
-#define MISO PB6
-#define MOSI PB7
-#define SCLK PB4
-
 
 /**Masking macros*/
 
