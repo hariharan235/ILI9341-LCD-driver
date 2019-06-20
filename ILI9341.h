@@ -1,8 +1,58 @@
-/*
- * ILI9341.h
+/**
+ * Project         : ILI9341 LCD header file
+ * Filename        : ILI9341.h
+ * Version         : 1.3
+ * Author          : Hariharan Gopalarishnan
+ * Date            : June 20th, 2019
+ * Target Platform : TM4C123GH6PM
+ * IDE             : Code Composer Studio v7.4.0
+ * System Clock    : 40 MHz
+ * SSI Clock Rate  : 20 MHz
+ * SSI Mode        : Master mode - 3
+ * SSI Format      : Freescale SPI Frame Format
+ * SSI Datasize    : 8-bit
+ */
+
+/**
+ * Copyright (c) 2019, Hariharan Gopalakrishnan
+ * All rights reserved.
  *
- *  Created on: Jun 2, 2019
- *      Author: harig
+ */
+
+/**
+ *MIT License
+ *
+ *Copyright (c) 2019 Hariharan Gopalakrishnan
+ *
+ *Permission is hereby granted, free of charge, to any person obtaining a copy
+ *of this software and associated documentation files (the "Software"), to deal
+ *in the Software without restriction, including without limitation the rights
+ *to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *copies of the Software, and to permit persons to whom the Software is
+ *furnished to do so, subject to the following conditions:
+ *
+ *The above copyright notice and this permission notice shall be included in all
+ *copies or substantial portions of the Software.
+ *
+ *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *SOFTWARE.
+ */
+
+/*!<
+ * Pin Map
+ *
+ * MISO - PD2
+ * LED - PB3
+ * SCK - PD0
+ * MOSI - PD3
+ * DC  - PE1
+ * RESET - PE2
+ * CS - PD1
  */
 
 #ifndef ILI9341_H_
@@ -64,12 +114,9 @@
 
 #define ILI9341_GMCTRP1 0xE0
 #define ILI9341_GMCTRN1 0xE1
-/*
-#define ILI9341_PWCTR6  0xFC
-
-*/
 
 // Color definitions
+
 #define ILI9341_BLACK       0x0000      /*   0,   0,   0 */
 #define ILI9341_NAVY        0x000F      /*   0,   0, 128 */
 #define ILI9341_DARKGREEN   0x03E0      /*   0, 128,   0 */
@@ -98,7 +145,6 @@
 #define MADCTL_RGB 0x00
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
-
 
 
 

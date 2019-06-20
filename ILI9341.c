@@ -1,3 +1,61 @@
+/**
+ * Project         : ILI9341 LCD source file
+ * Filename        : ILI9341.c
+ * Version         : 1.3
+ * Author          : Hariharan Gopalarishnan
+ * Date            : June 20th, 2019
+ * Target Platform : TM4C123GH6PM
+ * IDE             : Code Composer Studio v7.4.0
+ * System Clock    : 40 MHz
+ * SSI Clock Rate  : 20 MHz
+ * SSI Mode        : Master mode - 3
+ * SSI Format      : Freescale SPI Frame Format
+ * SSI Datasize    : 8-bit
+ */
+
+/**
+ * Copyright (c) 2019, Hariharan Gopalakrishnan
+ * All rights reserved.
+ *
+ */
+
+/**
+ *MIT License
+ *
+ *Copyright (c) 2019 Hariharan Gopalakrishnan
+ *
+ *Permission is hereby granted, free of charge, to any person obtaining a copy
+ *of this software and associated documentation files (the "Software"), to deal
+ *in the Software without restriction, including without limitation the rights
+ *to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *copies of the Software, and to permit persons to whom the Software is
+ *furnished to do so, subject to the following conditions:
+ *
+ *The above copyright notice and this permission notice shall be included in all
+ *copies or substantial portions of the Software.
+ *
+ *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *SOFTWARE.
+ */
+
+/*!<
+ * Pin Map
+ *
+ * MISO - PD2
+ * LED - PB3
+ * SCK - PD0
+ * MOSI - PD3
+ * DC  - PE1
+ * RESET - PE2
+ * CS - PD1
+ */
+
+
 #include "spi_lcd.h"
 #include "ILI9341.h"
 #include "wait.h"
@@ -9,7 +67,7 @@
 //TODO : fontconfig fns
 //TODO : image displays
 //TODO : Add touch lib
-//uint16_t cursorX,cursorY;
+
 struct LCD_status_t
 {
     uint16_t CURSORX;
@@ -20,10 +78,6 @@ struct LCD_status_t
     uint16_t CHARBGCOLOR;
     uint8_t ROTATION;
     uint8_t LINESPACING;
-//    uint8_t *fontArray;
-//    uint8_t (*fontDesp)[][3];
-//    uint8_t fontSize;
-//    uint8_t fontStyle;
     uint8_t CHARSPACING;
     uint8_t CHARSIZE;
 }LCD;
@@ -32,7 +86,14 @@ struct LCD_font
 {
     uint8_t FONTWIDTH;
     uint8_t FONTHEIGHT;
+    //    uint8_t *fontArray;
+    //    uint8_t (*fontDesp)[][3];
+    //    uint8_t fontSize;
+    //    uint8_t fontStyle;
 }font;
+
+
+
 void  writedata (uint8_t d)
 {
       uint8_t data = d;
@@ -421,7 +482,6 @@ void drawChar(char Character) //TODO : Generic Font
 
              tempX = LCD.CURSORX;
              tempY-=LCD.LINESPACING;
-//             tempY--;
       }
 
   }
@@ -494,15 +554,5 @@ int main()
     setCharConfig(ILI9341_DARKGREEN,1,1,ILI9341_BLACK,1);
     drawString("Press Enter to Begin",20);
     drawString("\r\nWelcome\r\n@ILI9341",19);
-//    drawString("hariharan@ILI9341:~$ sudo su\r\n",30);
-//    drawString("hariharan@ILI9341:~$ Enter Password:\r\n",38);
-//    moveCursor(10,50);
-//    drawString(">_ ",3);
-//    drawString("Hello!",8);
-//    drawString("\r\n",2);
-//    drawString("Press Enter to Begin!",21);
-////    setCharConfig(ILI9341_ORANGE,1,1,ILI9341_DARKGREEN);
-//    drawString("\r\n",2);
-//    drawString("Commands are ",13);
     while(1);
 }
