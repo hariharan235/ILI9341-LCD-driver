@@ -55,9 +55,18 @@
  * CS - PD1
  */
 
+
+
 #ifndef ILI9341_H_
 #define ILI9341_H_
 
+
+#include "spi_lcd.h"
+
+#include "wait.h"
+//#include "fontsans.h"
+//#include "fontcalibri.h"
+#include "tm4c123gh6pm.h"
 
 #define ILI9341_TFTWIDTH  240
 #define ILI9341_TFTHEIGHT 320
@@ -146,6 +155,23 @@
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
 
+
+// API
+
+void writedata (uint8_t d);
+void writecommand(uint8_t d);
+void init_lcd2(void);
+void setRotation(uint8_t m);
+void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+void fillScreen(uint16_t color);
+void drawPixel(int16_t x, int16_t y, uint16_t color);
+void drawRect(int16_t x,int16_t y,int16_t height,int16_t width,uint16_t color);
+void drawChar(char Character);
+void drawString(char arr[],size_t size);
+void clearScreen();
+void moveCursor(uint16_t x , uint16_t y);
+void setCharConfig(uint16_t color , uint8_t csize , uint8_t cspace , uint16_t bcolor , uint8_t lspace);
 
 
 #endif /* ILI9341_H_ */

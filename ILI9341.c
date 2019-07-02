@@ -55,14 +55,8 @@
  * CS - PD1
  */
 
-
-#include "spi_lcd.h"
 #include "ILI9341.h"
-#include "wait.h"
-//#include "fontsans.h"
-//#include "fontcalibri.h"
 #include "fontcalibri14.h"
-#include "tm4c123gh6pm.h"
 
 //TODO : fontconfig fns
 //TODO : image displays
@@ -541,18 +535,18 @@ void setCharConfig(uint16_t color , uint8_t csize , uint8_t cspace , uint16_t bc
 }
 
 
-int main()
-{
-    //Init Pins
-    //init LCD
-    //Set rotation
-    initSPI();
-    init_lcd2();
-    setRotation(0);
-    waitMicrosecond(10000);
-    clearScreen();
-    setCharConfig(ILI9341_DARKGREEN,1,1,ILI9341_BLACK,1);
-    drawString("Press Enter to Begin",20);
-    drawString("\r\nWelcome\r\n@ILI9341",19);
-    while(1);
-}
+//int main()
+//{
+//    //Init Pins
+//    //init LCD
+//    //Set rotation
+//    initSPI();
+//    init_lcd2();
+//    setRotation(0);
+//    waitMicrosecond(10000);
+//    clearScreen();
+//    setCharConfig(ILI9341_DARKGREEN,1,1,ILI9341_BLACK,1);
+//    drawString(" Press Enter to Begin",21);
+//    drawString("\r\nWelcome\r\n@ILI9341",19);
+//    while(1);
+//}
